@@ -1,0 +1,99 @@
+[gd_scene format=3 uid="uid://dj46c4ft6col6"]
+
+[ext_resource type="Script" uid="uid://bhnlfxkigifx7" path="res://game.gd" id="1_e2o6t"]
+[ext_resource type="PackedScene" uid="uid://nilpsoounqyv" path="res://player.tscn" id="2_feb5d"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_pq8q7"]
+size = Vector2(293, 472)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_pyidc"]
+size = Vector2(293, 472)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_h5w0j"]
+size = Vector2(653, 472)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vvh5c"]
+size = Vector2(113, 842)
+
+[node name="Game" type="Node2D" unique_id=443661166 node_paths=PackedStringArray("player", "player_spawn")]
+script = ExtResource("1_e2o6t")
+player = NodePath("World/Player")
+player_spawn = NodePath("World/Level/PlayerSpawn")
+
+[node name="World" type="Node2D" parent="." unique_id=1379438454]
+
+[node name="Player" parent="World" unique_id=504744069 instance=ExtResource("2_feb5d")]
+unique_name_in_owner = true
+position = Vector2(135, 171)
+
+[node name="Level" type="Node2D" parent="World" unique_id=369984761]
+
+[node name="PlayerSpawn" type="Marker2D" parent="World/Level" unique_id=82128111]
+unique_name_in_owner = true
+position = Vector2(137, 170)
+gizmo_extents = 77.8
+
+[node name="Platform" type="StaticBody2D" parent="World/Level" unique_id=2057177051]
+position = Vector2(3, 508)
+metadata/_edit_group_ = true
+
+[node name="Hitbox" type="CollisionShape2D" parent="World/Level/Platform" unique_id=1085408753]
+position = Vector2(123.5, 226)
+shape = SubResource("RectangleShape2D_pq8q7")
+
+[node name="Platform2" type="StaticBody2D" parent="World/Level" unique_id=923533413]
+position = Vector2(376, 386)
+metadata/_edit_group_ = true
+
+[node name="Hitbox" type="CollisionShape2D" parent="World/Level/Platform2" unique_id=1623953533]
+position = Vector2(123.5, 226)
+shape = SubResource("RectangleShape2D_pyidc")
+
+[node name="Platform3" type="StaticBody2D" parent="World/Level" unique_id=276920800]
+position = Vector2(1153, 434)
+metadata/_edit_group_ = true
+
+[node name="Hitbox" type="CollisionShape2D" parent="World/Level/Platform3" unique_id=1761441153]
+position = Vector2(136.5, 226)
+shape = SubResource("RectangleShape2D_h5w0j")
+
+[node name="Platform5" type="StaticBody2D" parent="World/Level" unique_id=80520658]
+position = Vector2(3377, 336)
+metadata/_edit_group_ = true
+
+[node name="Hitbox" type="CollisionShape2D" parent="World/Level/Platform5" unique_id=56598511]
+position = Vector2(136.5, 226)
+shape = SubResource("RectangleShape2D_h5w0j")
+
+[node name="Platform4" type="StaticBody2D" parent="World/Level" unique_id=1909985296]
+position = Vector2(1883, 350)
+metadata/_edit_group_ = true
+
+[node name="Hitbox" type="CollisionShape2D" parent="World/Level/Platform4" unique_id=508128379]
+position = Vector2(136.5, 411)
+shape = SubResource("RectangleShape2D_vvh5c")
+
+[node name="Platform6" type="StaticBody2D" parent="World/Level" unique_id=1252622773]
+position = Vector2(2276, 293)
+metadata/_edit_group_ = true
+
+[node name="Hitbox" type="CollisionShape2D" parent="World/Level/Platform6" unique_id=452532417]
+position = Vector2(136.5, 411)
+shape = SubResource("RectangleShape2D_vvh5c")
+
+[node name="Platform7" type="StaticBody2D" parent="World/Level" unique_id=1025914205]
+position = Vector2(2708, 391)
+metadata/_edit_group_ = true
+
+[node name="Hitbox" type="CollisionShape2D" parent="World/Level/Platform7" unique_id=187663644]
+position = Vector2(136.5, 411)
+shape = SubResource("RectangleShape2D_vvh5c")
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=1766082699]
+
+[node name="DebugLabel" type="Label" parent="UI" unique_id=1792483104]
+unique_name_in_owner = true
+offset_right = 40.0
+offset_bottom = 40.0
+
+[connection signal="fallout" from="World/Player" to="." method="_on_player_fallout"]

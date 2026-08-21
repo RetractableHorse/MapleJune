@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://nilpsoounqyv"]
+
+[ext_resource type="Script" uid="uid://ywuwt34md4jy" path="res://player.gd" id="1_4flbx"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_h5w0j"]
+radius = 38.0
+height = 112.0
+
+[node name="Player" type="CharacterBody2D" unique_id=504744069]
+script = ExtResource("1_4flbx")
+
+[node name="Hitbox" type="CollisionShape2D" parent="." unique_id=958227577]
+shape = SubResource("CapsuleShape2D_h5w0j")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1373083158]
+position_smoothing_enabled = true
