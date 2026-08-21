@@ -11,7 +11,7 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	var actions := ["move_left", "move_right", "jump"]
+	var actions := ["move_left", "move_right", "jump", "sprint"]
 
 	var pressed_actions: Array = actions.filter(
 		func(input) -> bool:
