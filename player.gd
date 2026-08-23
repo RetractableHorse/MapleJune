@@ -85,6 +85,7 @@ func _move(delta: float) -> void:
 			if signf(direction) != signf(velocity.x)
 			else MOVE_ACCELERATION
 		)
+
 		velocity.x = move_toward(velocity.x, speed * direction, accel * delta)
 
 	move_and_slide()
@@ -92,7 +93,6 @@ func _move(delta: float) -> void:
 
 func _check_fallout(_delta: float) -> void:
 	if global_position.y > 1000:
-		global_position = Vector2(100, 100)
 		velocity = Vector2()
 		state = State.FALLOUT
 		fallout.emit()

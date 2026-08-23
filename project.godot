@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="DemoProject"
+config/name="FoxDelivery"
 run/main_scene="uid://bie8emrkljwyf"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
@@ -23,6 +23,12 @@ window/stretch/aspect="expand"
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/GDQuest_GDScript_formatter/plugin.cfg")
+
+[file_customization]
+
+folder_colors={
+"res://addons/": "gray"
+}
 
 [input]
 

@@ -13,4 +13,5 @@ script = ExtResource("1_4flbx")
 shape = SubResource("CapsuleShape2D_h5w0j")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1373083158]
+offset = Vector2(200, 0)
 position_smoothing_enabled = true

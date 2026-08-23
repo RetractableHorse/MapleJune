@@ -9,8 +9,17 @@ size = Vector2(293, 472)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_pyidc"]
 size = Vector2(293, 472)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_e2o6t"]
+size = Vector2(653, 472)
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_h5w0j"]
 size = Vector2(653, 472)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_feb5d"]
+size = Vector2(113, 842)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fc0e3"]
+size = Vector2(113, 842)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vvh5c"]
 size = Vector2(113, 842)
@@ -55,7 +64,7 @@ metadata/_edit_group_ = true
 
 [node name="Hitbox" type="CollisionShape2D" parent="World/Level/Platform3" unique_id=1761441153]
 position = Vector2(136.5, 226)
-shape = SubResource("RectangleShape2D_h5w0j")
+shape = SubResource("RectangleShape2D_e2o6t")
 
 [node name="Platform5" type="StaticBody2D" parent="World/Level" unique_id=80520658]
 position = Vector2(3377, 336)
@@ -71,7 +80,7 @@ metadata/_edit_group_ = true
 
 [node name="Hitbox" type="CollisionShape2D" parent="World/Level/Platform4" unique_id=508128379]
 position = Vector2(136.5, 411)
-shape = SubResource("RectangleShape2D_vvh5c")
+shape = SubResource("RectangleShape2D_feb5d")
 
 [node name="Platform6" type="StaticBody2D" parent="World/Level" unique_id=1252622773]
 position = Vector2(2276, 293)
@@ -79,7 +88,7 @@ metadata/_edit_group_ = true
 
 [node name="Hitbox" type="CollisionShape2D" parent="World/Level/Platform6" unique_id=452532417]
 position = Vector2(136.5, 411)
-shape = SubResource("RectangleShape2D_vvh5c")
+shape = SubResource("RectangleShape2D_fc0e3")
 
 [node name="Platform7" type="StaticBody2D" parent="World/Level" unique_id=1025914205]
 position = Vector2(2708, 391)
