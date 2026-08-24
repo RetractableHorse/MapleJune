@@ -17,7 +17,7 @@ config/icon="res://assets/icon.svg"
 
 [display]
 
-window/stretch/mode="canvas_items"
+window/stretch/mode="viewport"
 window/stretch/aspect="expand"
 
 [editor_plugins]
@@ -30,7 +30,8 @@ folder_colors={
 "res://addons/": "red",
 "res://assets/": "orange",
 "res://entities/": "yellow",
-"res://screens/": "green"
+"res://levels/": "green",
+"res://screens/": "teal"
 }
 
 [input]

@@ -105,4 +105,4 @@ unique_name_in_owner = true
 offset_right = 40.0
 offset_bottom = 40.0
 
-[connection signal="fallout" from="World/Player" to="." method="_on_player_fallout"]
+[connection signal="died" from="World/Player" to="." method="_on_player_died"]

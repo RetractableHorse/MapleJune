@@ -26,5 +26,5 @@ func _respawn_player() -> void:
 	player.reset()
 
 
-func _on_player_fallout() -> void:
+func _on_player_died() -> void:
 	_respawn_player()
