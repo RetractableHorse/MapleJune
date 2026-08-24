@@ -77,6 +77,7 @@ func _check_fallout_death() -> bool:
 		dead = true
 		died.emit()
 		return true
+		
 
 	return false
 
