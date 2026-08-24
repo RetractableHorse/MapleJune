@@ -18,7 +18,7 @@ func _process(_delta: float) -> void:
 			return Input.is_action_pressed(input),
 	)
 
-	debug_label.text = ", ".join(pressed_actions)
+	debug_label.text = ", ".join(pressed_actions) #this needs to originate from the state itsself, not the input name
 
 
 func _respawn_player() -> void:
