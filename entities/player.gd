@@ -62,13 +62,32 @@ func _physics_process(delta: float) -> void:
 	if dead:
 		return
 
+	if _check_fallout_death():
+		return
+
+	_update_movement_velocity(delta)
+	_update_jump(delta)
+
+	move_and_slide()
+
+
+func _check_fallout_death() -> bool:
 	if global_position.y > 1000:
 		velocity = Vector2()
 		dead = true
 		died.emit()
+		return true
 
+	return false
+
+
+func _update_movement_velocity(delta: float):
 	if movement == 0:
-		var friction := ground_friction if is_on_floor() else air_friction
+		var friction := ground_friction
+
+		if not is_on_floor():
+			friction = air_friction
+
 		velocity.x = move_toward(velocity.x, 0, friction * delta)
 	else:
 		var accel := move_acceleration
@@ -77,10 +96,6 @@ func _physics_process(delta: float) -> void:
 			accel = turnaround_acceleration
 
 		velocity.x = move_toward(velocity.x, max_speed * movement, accel * delta)
-
-	_update_jump(delta)
-
-	move_and_slide()
 
 
 func _start_jump():
