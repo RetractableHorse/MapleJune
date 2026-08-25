@@ -2,22 +2,28 @@ class_name Player
 extends CharacterBody2D
 
 @export_group("Movement")
-@export_range(1.0, 5000.0) var max_speed := 750.0
-@export_range(1.0, 5000.0) var move_acceleration := 1500.0
+@export_range(1.0, 5000.0) var max_speed := 325.0
+@export_range(1.0, 5000.0) var move_acceleration := 750.0
 
 ## Velocity when turning around to face the other way.
 ## Set higher than `move_acceleration` to let the player turn a bit tighter
-@export_range(1.0, 5000.0) var turnaround_acceleration := 2200.0
+@export_range(1.0, 5000.0) var turnaround_acceleration := 1100.0
 
 ## How fast you slow down on the ground
-@export_range(1.0, 5000.0) var ground_friction := 1000.0
+@export_range(1.0, 5000.0) var ground_friction := 500.0
 
 ## How fast you slow down in the air
-@export_range(1.0, 5000.0) var air_friction := 100.0
+@export_range(1.0, 5000.0) var air_friction := 50.0
+
+@export_range(1.0, 5000.0) var dash_speed := 500.0
+@export_range(0.0, 5.0, 0.05) var max_dash_time := 0.4
+@export_range(1.0, 5000.0) var dash_air_impulse := 150.0
+@export_range(1.0, 5000.0) var dash_gravity := 300.0
 
 @export_group("Jumping")
-@export_range(1.0, 5000.0) var jump_velocity := 700.0
-@export_range(1.0, 5000.0) var gravity := 2500.0
+@export_range(1.0, 5000.0) var jump_speed := 440.0
+@export_range(1.0, 5000.0) var dash_jump_speed := 500.0
+@export_range(1.0, 5000.0) var gravity := 1800.0
 @export_range(0.0, 1.0, 0.01) var max_jump_time := 0.2
 
 ## Grace period for when the player can jump after leaving the ground
@@ -28,20 +34,30 @@ extends CharacterBody2D
 
 signal died
 
-enum JumpState {
+enum State {
 	GROUNDED,
 	JUMPING,
 	FALLING,
+	DASHING,
 }
 
 var movement := 0.0
+var facing := 1
 
-var jump_state := JumpState.GROUNDED
+var remaining_dash_time := 0.0
+
+var state := State.GROUNDED
 var remaining_jump_time := 0.0
 var remaining_coyote_time := 0.0
 var remaining_trampoline_time := 0.0
 
 var dead := false
+
+@onready var sprite_container: Node2D = $SpriteContainer
+
+var is_dashing: bool:
+	get:
+		return remaining_dash_time > 0.0
 
 
 func reset() -> void:
@@ -58,6 +74,17 @@ func _process(_delta: float) -> void:
 	if Input.is_action_just_released("jump"):
 		_finish_jump()
 
+	if Input.is_action_just_pressed("dash"):
+		_start_dash()
+
+	if Input.is_action_just_released("dash"):
+		_finish_dash()
+
+	if movement != 0:
+		facing = int(signf(movement))
+
+	sprite_container.scale.x = facing
+
 
 func _physics_process(delta: float) -> void:
 	if dead:
@@ -67,7 +94,7 @@ func _physics_process(delta: float) -> void:
 		return
 
 	_update_movement_velocity(delta)
-	_update_jump(delta)
+	_state_update(delta)
 
 	move_and_slide()
 
@@ -78,7 +105,6 @@ func _check_fallout_death() -> bool:
 		dead = true
 		died.emit()
 		return true
-		
 
 	return false
 
@@ -91,26 +117,30 @@ func _update_movement_velocity(delta: float):
 			friction = air_friction
 
 		velocity.x = move_toward(velocity.x, 0, friction * delta)
-	else:
-		var accel := move_acceleration
+		return
 
-		if signf(movement) != signf(velocity.x):
-			accel = turnaround_acceleration
+	if is_dashing:
+		remaining_dash_time -= delta
+		velocity.x = dash_speed * movement
+		return
 
-		velocity.x = move_toward(velocity.x, max_speed * movement, accel * delta)
+	var accel := move_acceleration
+
+	if signf(movement) != signf(velocity.x):
+		accel = turnaround_acceleration
+
+	velocity.x = move_toward(velocity.x, max_speed * movement, accel * delta)
 
 
 func _start_jump():
-	var has_grounded_state := jump_state == JumpState.GROUNDED
-
 	var is_falling_with_remaining_coyote_time := (
-		jump_state == JumpState.FALLING and remaining_coyote_time > 0
+		state == State.FALLING and remaining_coyote_time > 0
 	)
 
-	var can_jump = has_grounded_state or is_falling_with_remaining_coyote_time
+	var can_jump = is_on_floor() or is_falling_with_remaining_coyote_time
 
 	if can_jump:
-		jump_state = JumpState.JUMPING
+		state = State.JUMPING
 		remaining_jump_time = max_jump_time
 	else:
 		# if we can't jump, reset the remaining trampoline time,
@@ -119,35 +149,62 @@ func _start_jump():
 
 
 func _finish_jump():
-	if jump_state == JumpState.JUMPING:
-		jump_state = JumpState.FALLING
+	if state == State.JUMPING:
+		state = State.FALLING
 
 
-func _update_jump(delta: float):
-	match jump_state:
-		JumpState.GROUNDED:
+func _start_dash() -> void:
+	#if state != State.GROUNDED:
+	#velocity.y -= dash_air_impulse
+	state = State.DASHING
+	remaining_dash_time = max_dash_time
+
+
+func _finish_dash() -> void:
+	remaining_dash_time = 0.0
+
+
+func _state_update(delta: float):
+	match state:
+		State.GROUNDED:
 			velocity.y = 0
 
 			if not is_on_floor():
-				jump_state = JumpState.FALLING
+				state = State.FALLING
 				remaining_coyote_time = max_coyote_time
 
-		JumpState.JUMPING:
-			velocity.y = -jump_velocity
+		State.JUMPING:
+			var applied_jump_speed = jump_speed
+
+			if is_dashing:
+				applied_jump_speed = dash_jump_speed
+
+			velocity.y = -applied_jump_speed
 			remaining_jump_time -= delta
 
 			if remaining_jump_time < 0:
-				jump_state = JumpState.FALLING
+				state = State.FALLING
 
-		JumpState.FALLING:
+		State.FALLING:
 			velocity.y += gravity * delta
 			remaining_coyote_time -= delta
 			remaining_trampoline_time -= delta
 
 			if is_on_floor():
 				if remaining_trampoline_time > 0:
-					jump_state = JumpState.JUMPING
+					state = State.JUMPING
 					remaining_jump_time = max_jump_time
 				else:
-					jump_state = JumpState.GROUNDED
+					state = State.GROUNDED
 					velocity.y = 0
+
+		State.DASHING:
+			velocity.x = facing * dash_speed
+			velocity.y = minf(velocity.y + dash_gravity * delta, 0)
+
+			remaining_dash_time -= delta
+			if remaining_dash_time < 0:
+				if is_on_floor():
+					state = State.GROUNDED
+				else:
+					state = State.FALLING

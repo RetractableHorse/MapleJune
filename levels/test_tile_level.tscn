@@ -25,6 +25,8 @@ player_spawn = NodePath("PlayerSpawn")
 unique_name_in_owner = true
 position = Vector2(147.8, 312.8)
 collision_mask = 2
+max_speed = 375.0
+jump_velocity = 440.0
 
 [node name="PlayerSpawn" type="Marker2D" parent="." unique_id=1887073774]
 unique_name_in_owner = true
