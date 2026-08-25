@@ -1,6 +1,18 @@
 [gd_scene format=3 uid="uid://nilpsoounqyv"]
 
 [ext_resource type="Script" uid="uid://ywuwt34md4jy" path="res://entities/player.gd" id="1_4flbx"]
+[ext_resource type="Texture2D" uid="uid://y0dy1lluo55n" path="res://assets/icon.svg" id="2_b0kkn"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_xi506"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_b0kkn")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 5.0
+}]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_h5w0j"]
 radius = 16.0
@@ -9,9 +21,16 @@ height = 64.0
 [node name="Player" type="CharacterBody2D" unique_id=504744069]
 script = ExtResource("1_4flbx")
 
-[node name="Hitbox" type="CollisionShape2D" parent="." unique_id=958227577]
-shape = SubResource("CapsuleShape2D_h5w0j")
-
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1373083158]
 offset = Vector2(200, 0)
 position_smoothing_enabled = true
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1992294795]
+self_modulate = Color(9.63421, 9.582799, 0.0003052789, 1)
+position = Vector2(-1.013279e-06, 8.34465e-07)
+scale = Vector2(0.59374994, 0.875)
+sprite_frames = SubResource("SpriteFrames_xi506")
+animation = &"idle"
+
+[node name="Hitbox" type="CollisionShape2D" parent="." unique_id=958227577]
+shape = SubResource("CapsuleShape2D_h5w0j")
