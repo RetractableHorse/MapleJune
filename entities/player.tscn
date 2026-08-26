@@ -242,12 +242,14 @@ size = Vector2(27, 58)
 script = ExtResource("1_4flbx")
 move_acceleration = 1500.0
 turnaround_acceleration = 3200.0
+ground_friction = 1400.0
+infinite_dash = true
+dash_gravity = 1000.0
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1373083158]
 position_smoothing_enabled = true
 
 [node name="SpriteContainer" type="Node2D" parent="." unique_id=19006677]
-scale = Vector2(-1, 1)
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="SpriteContainer" unique_id=1992294795]
 position = Vector2(0, -4.999996)
@@ -255,6 +257,7 @@ scale = Vector2(0.4, 0.4)
 sprite_frames = SubResource("SpriteFrames_xi506")
 animation = &"idle"
 autoplay = "idle"
+frame_progress = 0.6750237
 
 [node name="Hitbox" type="CollisionShape2D" parent="." unique_id=958227577]
 position = Vector2(-0.5, 0)

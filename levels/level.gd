@@ -5,7 +5,7 @@ extends Node2D
 
 
 func _ready() -> void:
-	player.died.connect(_on_player_died)
+	player.state_changed.connect(_on_player_state_changed)
 	_respawn_player()
 
 
@@ -14,5 +14,7 @@ func _respawn_player() -> void:
 	player.reset()
 
 
-func _on_player_died() -> void:
-	_respawn_player()
+func _on_player_state_changed(state: Player.State) -> void:
+	prints("player state:", Player.State.find_key(state))
+	if state == Player.State.DEAD:
+		_respawn_player()
