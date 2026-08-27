@@ -70,8 +70,6 @@ var remaining_trampoline_time := 0.0
 var dash_facing := Direction.RIGHT
 var remaining_dash_time := 0.0
 
-@onready var sprite_container: Node2D = $SpriteContainer
-
 var is_dashing: bool:
 	get:
 		return remaining_dash_time > 0.0
@@ -79,6 +77,10 @@ var is_dashing: bool:
 var is_wall_sliding: bool:
 	get:
 		return is_on_wall_only() and signf(get_wall_normal().x) == -signf(movement)
+
+# using a separate transform node for the sprite so the sprite's own transform
+# can be configured independent of us flipping it (or whatever else)
+@onready var sprite_transform: Node2D = %SpriteTransform
 
 
 func reset() -> void:
@@ -104,7 +106,7 @@ func _process(_delta: float) -> void:
 	if movement != 0:
 		facing = int(signf(movement)) as Direction
 
-	sprite_container.scale.x = facing
+	sprite_transform.scale.x = facing
 
 
 func _physics_process(delta: float) -> void:

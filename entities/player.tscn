@@ -249,9 +249,10 @@ infinite_dash = true
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1373083158]
 position_smoothing_enabled = true
 
-[node name="SpriteContainer" type="Node2D" parent="." unique_id=19006677]
+[node name="SpriteTransform" type="Node2D" parent="." unique_id=19006677]
+unique_name_in_owner = true
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="SpriteContainer" unique_id=1992294795]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="SpriteTransform" unique_id=1992294795]
 position = Vector2(0, -4.999996)
 scale = Vector2(0.4, 0.4)
 sprite_frames = SubResource("SpriteFrames_xi506")
