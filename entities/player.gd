@@ -106,9 +106,6 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_released("dash"):
 		_finish_dash()
 
-	if movement != 0:
-		facing = int(signf(movement)) as Direction
-
 	sprite_transform.scale.x = facing
 
 	if state == State.DEAD:
@@ -214,6 +211,10 @@ func _update_movement_velocity(delta: float):
 	velocity.x = move_toward(velocity.x, max_speed * movement, accel * delta)
 
 
+func _apply_facing_from_movement() -> void:
+	facing = int(signf(movement)) as Direction
+
+
 func _start_jump():
 	if (is_on_floor() or (state == State.FALLING and remaining_coyote_time > 0)):
 		state = State.JUMPING
@@ -266,6 +267,7 @@ func _process_state(delta: float) -> void:
 
 		State.RUNNING:
 			_apply_gravity(delta)
+			_apply_facing_from_movement()
 
 			if movement == 0:
 				_apply_ground_friction(delta)
@@ -283,6 +285,7 @@ func _process_state(delta: float) -> void:
 
 		State.FALLING:
 			_apply_gravity(delta)
+			_apply_facing_from_movement()
 
 			remaining_trampoline_time -= delta
 			remaining_coyote_time -= delta
@@ -307,6 +310,7 @@ func _process_state(delta: float) -> void:
 
 		State.JUMPING:
 			_apply_movement_accel(delta)
+			_apply_facing_from_movement()
 			velocity.y = -jump_speed
 
 			remaining_jump_time -= delta
@@ -319,6 +323,7 @@ func _process_state(delta: float) -> void:
 
 		State.WALL_SLIDE:
 			velocity.y = minf(velocity.y + 1000.0 * delta, 150.0)
+			facing = int(signf(get_wall_normal().x)) as Direction
 
 			if is_on_floor():
 				state = State.IDLE
