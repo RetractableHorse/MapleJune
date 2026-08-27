@@ -236,9 +236,12 @@ animations = [{
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_b0kkn"]
-size = Vector2(27, 58)
+size = Vector2(28, 58)
 
 [node name="Player" type="CharacterBody2D" unique_id=504744069]
+collision_mask = 2
+floor_constant_speed = true
+floor_snap_length = 10.0
 safe_margin = 0.2
 script = ExtResource("1_4flbx")
 move_acceleration = 1500.0
@@ -262,5 +265,4 @@ autoplay = "idle"
 frame_progress = 0.47458744
 
 [node name="Hitbox" type="CollisionShape2D" parent="." unique_id=958227577]
-position = Vector2(-0.5, 0)
 shape = SubResource("RectangleShape2D_b0kkn")
