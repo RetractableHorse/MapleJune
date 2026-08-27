@@ -60,7 +60,10 @@ var state := State.IDLE:
 		state_changed.emit(new_state)
 
 var movement := 0.0
-var facing := Direction.RIGHT
+var facing := Direction.RIGHT:
+	set(value):
+		if Direction.find_key(value):
+			facing = value
 
 var jump_requested := false
 var remaining_jump_time := 0.0
