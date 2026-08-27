@@ -91,7 +91,7 @@ func reset() -> void:
 	state = State.IDLE
 
 
-func _process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	movement = Input.get_axis("move_left", "move_right")
 
 	if Input.is_action_just_pressed("jump"):
@@ -111,8 +111,6 @@ func _process(_delta: float) -> void:
 
 	sprite_transform.scale.x = facing
 
-
-func _physics_process(delta: float) -> void:
 	if state == State.DEAD:
 		return
 
