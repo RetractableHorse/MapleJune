@@ -185,13 +185,7 @@ func _handle_state_event(event: StateEvent) -> void:
 				remaining_trampoline_time = max_trampoline_time
 
 			if event is UpdateEvent:
-				# only apply gravity if we have no more coyote time
-				# this prevents a dumb quirk where the player dips for a bit after going off a ledge,
-				# and makes the coyote time jump look smoother
-				if remaining_coyote_time > 0:
-					velocity.y = 0
-				else:
-					_apply_gravity(event.delta)
+				_apply_gravity(event.delta)
 
 				if movement == 0:
 					_apply_air_friction(event.delta)
