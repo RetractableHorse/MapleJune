@@ -56,8 +56,10 @@ enum Direction {
 
 var state := State.IDLE:
 	set(new_state):
+		_handle_state_event(ExitStateEvent.new())
 		state = new_state
 		state_changed.emit(new_state)
+		_handle_state_event(EnterStateEvent.new())
 
 var movement := 0.0
 var facing := Direction.RIGHT:
@@ -95,18 +97,16 @@ func _physics_process(delta: float) -> void:
 	movement = Input.get_axis("move_left", "move_right")
 
 	if Input.is_action_just_pressed("jump"):
-		_start_jump()
+		_handle_state_event(StartJumpEvent.new())
 
 	if Input.is_action_just_released("jump"):
-		_finish_jump()
+		_handle_state_event(FinishJumpEvent.new())
 
 	if Input.is_action_just_pressed("dash"):
-		_start_dash()
+		_handle_state_event(StartDashEvent.new())
 
 	if Input.is_action_just_released("dash"):
-		_finish_dash()
-
-	sprite_transform.scale.x = facing
+		_handle_state_event(FinishDashEvent.new())
 
 	if state == State.DEAD:
 		return
@@ -114,24 +114,163 @@ func _physics_process(delta: float) -> void:
 	if _check_fallout_death():
 		return
 
-	_process_state(delta)
+	_handle_state_event(UpdateEvent.new(delta))
 	move_and_slide()
 
+	sprite_transform.scale.x = facing
 
-func _process_jump(delta: float) -> void:
-	remaining_jump_time -= delta
-	remaining_trampoline_time -= delta
-	remaining_coyote_time -= delta
 
-	if is_on_floor() and (jump_requested or remaining_trampoline_time > 0):
-		remaining_jump_time = max_jump_time
-		if is_wall_sliding:
-			velocity.x = get_wall_normal().x * 300
+# aight here's the Entire Thing™️
+# the player should have different behaviors in each state depending on what happens,
+# and we're using this weird-looking event setup to put together all of the code
+# for each of those different things that happen. for example,
+# this lets us define what should happen when we enter the jump state,
+# and _while_ we're jumping (or anything other event) in the same place,
+# and not scattered in some separate `_start_jump()` method with its own state checks and logic
+func _handle_state_event(event: StateEvent) -> void:
+	match state:
+		State.IDLE:
+			if event is StartJumpEvent:
+				state = State.JUMPING
 
-	if jump_requested and not is_on_floor():
-		remaining_trampoline_time = max_trampoline_time
+			if event is UpdateEvent:
+				_apply_ground_friction(event.delta)
 
-	jump_requested = false
+				velocity.y = 0
+
+				if _check_falling():
+					return
+
+				if is_on_floor() and movement != 0:
+					state = State.RUNNING
+
+		State.RUNNING:
+			if event is StartJumpEvent:
+				state = State.JUMPING
+
+			if event is UpdateEvent:
+				if movement == 0:
+					state = State.IDLE
+					return
+
+				_apply_movement_accel(event.delta)
+
+				if _check_wall_slide():
+					return
+
+				if not is_on_floor():
+					state = State.FALLING
+
+					# we could put this in "enter" for falling,
+					# but we only want to set this if we go from running to falling,
+					# because any other case is just... falling,
+					# e.g. from idle, it'd be because a platform disappeared,
+					# and from wall slide, because we ran out of wall to slide on
+					remaining_coyote_time = max_coyote_time
+					return
+
+				_apply_gravity(event.delta)
+				_apply_facing_from_movement()
+
+		State.FALLING:
+			if event is StartJumpEvent:
+				if remaining_coyote_time > 0:
+					remaining_coyote_time = 0
+					state = State.JUMPING
+				else:
+					remaining_trampoline_time = max_trampoline_time
+
+			if event is UpdateEvent:
+				_apply_facing_from_movement()
+
+				remaining_trampoline_time -= event.delta
+				remaining_coyote_time -= event.delta
+
+				# only apply gravity if we have no more coyote time
+				# this prevents a dumb quirk where the player dips for a bit after going off a ledge,
+				# and makes the coyote time jump look smoother
+				if remaining_coyote_time > 0:
+					velocity.y = 0
+				else:
+					_apply_gravity(event.delta)
+
+				if movement == 0:
+					_apply_air_friction(event.delta)
+				else:
+					_apply_movement_accel(event.delta)
+
+				if is_on_floor():
+					if remaining_trampoline_time > 0:
+						state = State.JUMPING
+						remaining_jump_time = max_jump_time
+					elif movement != 0:
+						state = State.RUNNING
+					else:
+						state = State.IDLE
+
+				if _check_wall_slide():
+					return
+
+		State.JUMPING:
+			if event is EnterStateEvent:
+				remaining_jump_time = max_jump_time
+
+			if event is FinishJumpEvent:
+				remaining_jump_time = 0.0
+				state = State.FALLING
+
+			if event is UpdateEvent:
+				_apply_movement_accel(event.delta)
+				_apply_facing_from_movement()
+				velocity.y = -jump_speed
+
+				remaining_jump_time -= event.delta
+
+				if remaining_jump_time < 0:
+					state = State.FALLING
+
+				if _check_wall_slide():
+					return
+
+		State.WALL_SLIDE:
+			if event is StartJumpEvent:
+				velocity.x = get_wall_normal().x * 300.0
+				state = State.JUMPING
+
+			if event is UpdateEvent:
+				velocity.y = minf(velocity.y + 1000.0 * event.delta, 150.0)
+				facing = int(signf(get_wall_normal().x)) as Direction
+
+				if is_on_floor():
+					state = State.IDLE
+					return
+
+				if not is_on_wall():
+					if is_on_floor():
+						state = State.IDLE
+					else:
+						state = State.FALLING
+
+		State.DASHING:
+			if event is UpdateEvent:
+				if _check_wall_slide():
+					return
+
+				velocity.x = dash_facing * dash_speed
+
+				# while dashing, if we're moving upward, apply lessened gravity to move downward,
+				# but once we're level, stay level
+				velocity.y = minf(velocity.y + dash_gravity * event.delta, 0)
+
+				if infinite_dash:
+					return
+
+				remaining_dash_time -= event.delta
+				if remaining_dash_time < 0:
+					if is_on_floor():
+						state = State.IDLE
+					else:
+						state = State.FALLING
 
 
 func _apply_gravity(delta: float) -> void:
@@ -160,17 +299,6 @@ func _check_falling() -> bool:
 	return true
 
 
-func _check_jump() -> bool:
-	var should_jump := is_on_floor() and remaining_trampoline_time > 0
-	if not should_jump:
-		return false
-
-	state = State.JUMPING
-	remaining_jump_time = max_jump_time
-
-	return true
-
-
 func _check_wall_slide() -> bool:
 	if not is_on_wall_only():
 		return false
@@ -188,169 +316,45 @@ func _check_fallout_death() -> bool:
 	return false
 
 
-func _update_movement_velocity(delta: float):
-	if movement == 0:
-		var friction := ground_friction
-
-		if not is_on_floor():
-			friction = air_friction
-
-		velocity.x = move_toward(velocity.x, 0, friction * delta)
-		return
-
-	if is_dashing:
-		remaining_dash_time -= delta
-		velocity.x = dash_speed * movement
-		return
-
-	var accel := move_acceleration
-
-	if signf(movement) != signf(velocity.x):
-		accel = turnaround_acceleration
-
-	velocity.x = move_toward(velocity.x, max_speed * movement, accel * delta)
-
-
 func _apply_facing_from_movement() -> void:
 	facing = int(signf(movement)) as Direction
 
 
-func _start_jump():
-	if (is_on_floor() or (state == State.FALLING and remaining_coyote_time > 0)):
-		state = State.JUMPING
-		remaining_jump_time = max_jump_time
-	elif state == State.WALL_SLIDE:
-		state = State.JUMPING
-		remaining_jump_time = max_jump_time
-		velocity.x = get_wall_normal().x * 300.0
-	else:
-		# if we can't jump, reset the remaining trampoline time,
-		# so a jump can happen later if we hit the ground before it reaches 0
-		remaining_trampoline_time = max_trampoline_time
+@abstract
+class StateEvent:
+	pass
 
 
-func _finish_jump():
-	if state == State.JUMPING:
-		state = State.FALLING
+class EnterStateEvent extends StateEvent:
+	pass
 
 
-func _start_dash() -> void:
-	#if state != State.GROUNDED:
-	#velocity.y -= dash_air_impulse
-	state = State.DASHING
-	dash_facing = facing
-	remaining_dash_time = max_dash_time
+class ExitStateEvent extends StateEvent:
+	pass
 
 
-func _finish_dash() -> void:
-	remaining_dash_time = 0.0
-	if not is_on_floor():
-		state = State.FALLING
-	elif movement != 0:
-		state = State.RUNNING
-	else:
-		state = State.IDLE
+class UpdateEvent extends StateEvent:
+	var delta: float
 
 
-func _process_state(delta: float) -> void:
-	match state:
-		State.IDLE:
-			_apply_ground_friction(delta)
+	@warning_ignore("shadowed_variable")
+	func _init(
+		delta: float
+	) -> void:
+		self.delta = delta
 
-			velocity.y = 0
 
-			if _check_falling():
-				return
+class StartJumpEvent extends StateEvent:
+	pass
 
-			if is_on_floor() and movement != 0:
-				state = State.RUNNING
 
-		State.RUNNING:
-			_apply_gravity(delta)
-			_apply_facing_from_movement()
+class FinishJumpEvent extends StateEvent:
+	pass
 
-			if movement == 0:
-				_apply_ground_friction(delta)
-			else:
-				_apply_movement_accel(delta)
 
-			if _check_wall_slide():
-				return
+class StartDashEvent extends StateEvent:
+	pass
 
-			if is_on_floor() and movement == 0:
-				state = State.IDLE
 
-			if _check_falling():
-				return
-
-		State.FALLING:
-			_apply_gravity(delta)
-			_apply_facing_from_movement()
-
-			remaining_trampoline_time -= delta
-			remaining_coyote_time -= delta
-
-			if movement == 0:
-				_apply_air_friction(delta)
-			else:
-				_apply_movement_accel(delta)
-
-			if is_on_floor():
-				if remaining_trampoline_time > 0:
-					state = State.JUMPING
-					remaining_jump_time = max_jump_time
-				elif movement != 0:
-					state = State.RUNNING
-				else:
-					state = State.IDLE
-				return
-
-			if _check_wall_slide():
-				return
-
-		State.JUMPING:
-			_apply_movement_accel(delta)
-			_apply_facing_from_movement()
-			velocity.y = -jump_speed
-
-			remaining_jump_time -= delta
-
-			if remaining_jump_time < 0:
-				state = State.FALLING
-
-			if _check_wall_slide():
-				return
-
-		State.WALL_SLIDE:
-			velocity.y = minf(velocity.y + 1000.0 * delta, 150.0)
-			facing = int(signf(get_wall_normal().x)) as Direction
-
-			if is_on_floor():
-				state = State.IDLE
-				return
-
-			if not is_on_wall():
-				if is_on_floor():
-					state = State.IDLE
-				else:
-					state = State.FALLING
-
-		State.DASHING:
-			if _check_wall_slide():
-				return
-
-			velocity.x = dash_facing * dash_speed
-
-			# while dashing, if we're moving upward, apply lessened gravity to move downward,
-			# but once we're level, stay level
-			velocity.y = minf(velocity.y + dash_gravity * delta, 0)
-
-			if infinite_dash:
-				return
-
-			remaining_dash_time -= delta
-			if remaining_dash_time < 0:
-				if is_on_floor():
-					state = State.IDLE
-				else:
-					state = State.FALLING
+class FinishDashEvent extends StateEvent:
+	pass
