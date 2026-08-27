@@ -75,13 +75,7 @@ var remaining_trampoline_time := 0.0
 var dash_facing := Direction.RIGHT
 var remaining_dash_time := 0.0
 
-var is_dashing: bool:
-	get:
-		return remaining_dash_time > 0.0
-
-var is_wall_sliding: bool:
-	get:
-		return is_on_wall_only() and signf(get_wall_normal().x) == -signf(movement)
+var _just_jumped_from_wall_slide := false
 
 # using a separate transform node for the sprite so the sprite's own transform
 # can be configured independent of us flipping it (or whatever else)
@@ -153,7 +147,10 @@ func _handle_state_event(event: StateEvent) -> void:
 					state = State.IDLE
 					return
 
-				_apply_movement_accel(event.delta)
+				if signf(movement) == -signf(velocity.x):
+					_apply_turnaround_accel(event.delta)
+				else:
+					_apply_movement_accel(event.delta)
 
 				if _check_wall_slide():
 					return
@@ -177,15 +174,17 @@ func _handle_state_event(event: StateEvent) -> void:
 				if remaining_coyote_time > 0:
 					remaining_coyote_time = 0
 					state = State.JUMPING
-				else:
-					remaining_trampoline_time = max_trampoline_time
+					return
+
+				if is_on_wall_only():
+					state = State.JUMPING
+					velocity.x = get_wall_normal().x * 300.0
+					_apply_facing_from_movement()
+					return
+
+				remaining_trampoline_time = max_trampoline_time
 
 			if event is UpdateEvent:
-				_apply_facing_from_movement()
-
-				remaining_trampoline_time -= event.delta
-				remaining_coyote_time -= event.delta
-
 				# only apply gravity if we have no more coyote time
 				# this prevents a dumb quirk where the player dips for a bit after going off a ledge,
 				# and makes the coyote time jump look smoother
@@ -211,6 +210,14 @@ func _handle_state_event(event: StateEvent) -> void:
 				if _check_wall_slide():
 					return
 
+				if is_on_wall_only():
+					_apply_inverse_wall_facing()
+				else:
+					_apply_facing_from_movement()
+
+				remaining_trampoline_time -= event.delta
+				remaining_coyote_time -= event.delta
+
 		State.JUMPING:
 			if event is EnterStateEvent:
 				remaining_jump_time = max_jump_time
@@ -220,8 +227,16 @@ func _handle_state_event(event: StateEvent) -> void:
 				state = State.FALLING
 
 			if event is UpdateEvent:
-				_apply_movement_accel(event.delta)
-				_apply_facing_from_movement()
+				if is_on_wall_only():
+					_apply_inverse_wall_facing()
+				else:
+					_apply_facing_from_movement()
+
+				if movement == 0:
+					_apply_air_friction(event.delta)
+				else:
+					_apply_movement_accel(event.delta)
+
 				velocity.y = -jump_speed
 
 				remaining_jump_time -= event.delta
@@ -229,27 +244,43 @@ func _handle_state_event(event: StateEvent) -> void:
 				if remaining_jump_time < 0:
 					state = State.FALLING
 
-				if _check_wall_slide():
+				# when we go to jumping from wall sliding, technically the character
+				# hasn't `move_and_slide()`d away from the wall at this point,
+				# so it'll re-trigger the wall slide check and go right back to the wall slide
+				# ...while in the air, jumping, which is the weirdest fuckin thing 🫠
+				#
+				# so that's why we need this awful `_just_jumped_from_wall_slide` flag,
+				# to basically ignore this check for a tick until after the player has moved
+				# and is no longer _actually_ colliding with the wall
+				if not _just_jumped_from_wall_slide and _check_wall_slide():
 					return
 
+				_just_jumped_from_wall_slide = false
+
 		State.WALL_SLIDE:
+			if event is EnterStateEvent:
+				facing = int(signf(get_wall_normal().x)) as Direction
+
 			if event is StartJumpEvent:
 				velocity.x = get_wall_normal().x * 300.0
 				state = State.JUMPING
+				_just_jumped_from_wall_slide = true
 
 			if event is UpdateEvent:
-				velocity.y = minf(velocity.y + 1000.0 * event.delta, 150.0)
-				facing = int(signf(get_wall_normal().x)) as Direction
+				if not _is_moving_against_wall() or not is_on_wall_only():
+					state = State.FALLING
+
+					# give some grace period for jumping just shortly after facing away from the wall,
+					# to make wall jumping easier
+					#remaining_coyote_time = max_coyote_time
+					return
 
 				if is_on_floor():
 					state = State.IDLE
 					return
 
-				if not is_on_wall():
-					if is_on_floor():
-						state = State.IDLE
-					else:
-						state = State.FALLING
+				facing = int(signf(get_wall_normal().x)) as Direction
+				velocity.y = minf(velocity.y + 1000.0 * event.delta, 150.0)
 
 		State.DASHING:
 			if event is UpdateEvent:
@@ -273,6 +304,10 @@ func _handle_state_event(event: StateEvent) -> void:
 						state = State.FALLING
 
 
+func _is_moving_against_wall() -> bool:
+	return signf(movement) == -signf(get_wall_normal().x)
+
+
 func _apply_gravity(delta: float) -> void:
 	velocity.y += gravity * delta
 
@@ -289,6 +324,14 @@ func _apply_movement_accel(delta: float) -> void:
 	velocity.x = move_toward(velocity.x, max_speed * movement, move_acceleration * delta)
 
 
+func _apply_turnaround_accel(delta: float) -> void:
+	velocity.x = move_toward(velocity.x, max_speed * movement, turnaround_acceleration * delta)
+
+
+func _apply_inverse_wall_facing() -> void:
+	facing = int(signf(get_wall_normal().x)) as Direction
+
+
 func _check_falling() -> bool:
 	if is_on_floor():
 		return false
@@ -300,11 +343,19 @@ func _check_falling() -> bool:
 
 
 func _check_wall_slide() -> bool:
-	if not is_on_wall_only():
-		return false
+	if is_on_wall_only() and _is_moving_against_wall():
+		state = State.WALL_SLIDE
+		return true
 
-	state = State.WALL_SLIDE
-	return true
+	return false
+	#if not is_on_wall_only():
+	#return false
+	#
+	#
+	#get_wall_normal()
+#
+#state = State.WALL_SLIDE
+#return true
 
 
 func _check_fallout_death() -> bool:

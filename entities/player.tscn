@@ -239,6 +239,7 @@ animations = [{
 size = Vector2(27, 58)
 
 [node name="Player" type="CharacterBody2D" unique_id=504744069]
+safe_margin = 0.2
 script = ExtResource("1_4flbx")
 move_acceleration = 1500.0
 turnaround_acceleration = 3200.0
