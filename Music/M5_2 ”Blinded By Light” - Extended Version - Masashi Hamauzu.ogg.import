@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://bcem0u02bxxk7"
+path="res://.godot/imported/M5_2 ”Blinded By Light” - Extended Version - Masashi Hamauzu.ogg-01636dbb4a7e35d1d93fcb04f3fc171d.oggvorbisstr"
+
+[deps]
+
+source_file="res://Music/M5_2 ”Blinded By Light” - Extended Version - Masashi Hamauzu.ogg"
+dest_files=["res://.godot/imported/M5_2 ”Blinded By Light” - Extended Version - Masashi Hamauzu.ogg-01636dbb4a7e35d1d93fcb04f3fc171d.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

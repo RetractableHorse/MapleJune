@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://ywuwt34md4jy" path="res://entities/player.gd" id="1_4flbx"]
 [ext_resource type="Texture2D" uid="uid://bvsuvsso30nyb" path="res://assets/Mira_idle-Sheet.png" id="2_b0kkn"]
+[ext_resource type="Script" uid="uid://dp62naswfybju" path="res://camera.gd" id="2_e4p34"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_e4p34"]
 atlas = ExtResource("2_b0kkn")
@@ -248,10 +249,22 @@ move_acceleration = 1500.0
 turnaround_acceleration = 3500.0
 ground_friction = 1400.0
 dash_gravity = 1000.0
-infinite_dash = true
+wall_slide_gravity = 5000.0
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1373083158]
 position_smoothing_enabled = true
+script = ExtResource("2_e4p34")
+target_path = NodePath("..")
+lookahead_distance = 150.0
+enable_down_pan = false
+use_default_limits = false
+enable_speed_zoom = true
+speed_zoom_threshold = 350.0
+speed_zoom_smoothing = 0.5
+enable_walk_bob = false
+enable_airborne_float = false
+enable_land_impact = false
+enable_damage_reaction = false
 
 [node name="SpriteTransform" type="Node2D" parent="." unique_id=19006677]
 unique_name_in_owner = true
