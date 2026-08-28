@@ -36,6 +36,11 @@ extends CharacterBody2D
 @export var infinite_dash := false
 @export_range(0.0, 5.0, 0.05) var max_dash_time := 0.4
 
+@export_category("Walls")
+@export_range(1.0, 5000.0) var wall_jump_boost := 300.0
+@export_range(1.0, 5000.0) var wall_slide_gravity := 1000.0
+@export_range(1.0, 5000.0) var wall_slide_max_fall_speed := 150.0
+
 signal state_changed(state: State)
 
 enum State {
@@ -178,7 +183,7 @@ func _handle_state_event(event: StateEvent) -> void:
 
 				if is_on_wall_only():
 					state = State.JUMPING
-					velocity.x = get_wall_normal().x * 300.0
+					velocity.x = get_wall_normal().x * wall_jump_boost
 					_apply_facing_from_movement()
 					return
 
@@ -256,7 +261,7 @@ func _handle_state_event(event: StateEvent) -> void:
 				facing = int(signf(get_wall_normal().x)) as Direction
 
 			if event is StartJumpEvent:
-				velocity.x = get_wall_normal().x * 300.0
+				velocity.x = get_wall_normal().x * wall_jump_boost
 				state = State.JUMPING
 				_just_jumped_from_wall_slide = true
 
@@ -274,7 +279,10 @@ func _handle_state_event(event: StateEvent) -> void:
 					return
 
 				facing = int(signf(get_wall_normal().x)) as Direction
-				velocity.y = minf(velocity.y + 1000.0 * event.delta, 150.0)
+				velocity.y = minf(
+					velocity.y + wall_slide_gravity * event.delta,
+					wall_slide_max_fall_speed,
+				)
 
 		State.DASHING:
 			if event is UpdateEvent:
