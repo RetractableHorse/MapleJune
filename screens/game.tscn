@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://dj46c4ft6col6"]
 
 [ext_resource type="Script" uid="uid://bhnlfxkigifx7" path="res://screens/game.gd" id="1_e2o6t"]
-[ext_resource type="PackedScene" uid="uid://cunev1s5y2e44" path="res://levels/test_tile_level.tscn" id="2_3ciuf"]
+[ext_resource type="PackedScene" uid="uid://cunev1s5y2e44" path="res://levels/level_test1.tscn" id="2_3ciuf"]
 
 [node name="Game" type="Node2D" unique_id=443661166]
 script = ExtResource("1_e2o6t")

@@ -1,4 +1,4 @@
-[gd_scene format=4 uid="uid://c76gkmnnxiyma"]
+[gd_scene format=4 uid="uid://yeurqr5qgic3"]
 
 [ext_resource type="Script" uid="uid://bhnlfxkigifx7" path="res://screens/game.gd" id="1_afcml"]
 [ext_resource type="PackedScene" uid="uid://nilpsoounqyv" path="res://entities/player.tscn" id="2_osd80"]
@@ -19,10 +19,8 @@ texture = ExtResource("3_osd80")
 physics_layer_0/collision_layer = 1
 sources/0 = SubResource("TileSetAtlasSource_3e0rh")
 
-[node name="Game" type="Node2D" unique_id=443661166 node_paths=PackedStringArray("player", "player_spawn")]
+[node name="Game" type="Node2D" unique_id=443661166]
 script = ExtResource("1_afcml")
-player = NodePath("World/Player")
-player_spawn = NodePath("World/PlayerSpawn")
 
 [node name="World" type="Node2D" parent="." unique_id=1379438454]
 
