@@ -41,6 +41,11 @@ extends CharacterBody2D
 @export_range(1.0, 5000.0) var wall_slide_gravity := 1000.0
 @export_range(1.0, 5000.0) var wall_slide_max_fall_speed := 150.0
 
+@export_category("Misc")
+@export_range(1.0, 5000.0) var oob_distance := 1000.0
+
+@export var level: TileMapLayer
+
 signal state_changed(state: State)
 
 enum State {
@@ -110,7 +115,7 @@ func _physics_process(delta: float) -> void:
 	if state == State.DEAD:
 		return
 
-	if _check_fallout_death():
+	if _check_out_of_bounds():
 		return
 
 	_handle_state_event(UpdateEvent.new(delta))
@@ -360,8 +365,17 @@ func _check_wall_slide() -> bool:
 #return true
 
 
-func _check_fallout_death() -> bool:
-	if global_position.y > 1000:
+func _check_out_of_bounds() -> bool:
+	var level_rect := level.get_used_rect()
+
+	var global_level_rect := Rect2(
+		level_rect.position * level.tile_set.tile_size,
+		level_rect.size * level.tile_set.tile_size,
+	)
+
+	var in_bounds_rect := global_level_rect.expand(Vector2.ONE * oob_distance)
+
+	if global_position.y > in_bounds_rect.end.y:
 		velocity = Vector2()
 		state = State.DEAD
 		return true

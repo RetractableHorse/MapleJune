@@ -8,7 +8,8 @@ script = ExtResource("1_e2o6t")
 
 [node name="World" type="Node2D" parent="." unique_id=1379438454]
 
-[node name="TestTileLevel" parent="World" unique_id=321255120 instance=ExtResource("2_3ciuf")]
+[node name="Level" parent="World" unique_id=321255120 instance=ExtResource("2_3ciuf")]
+unique_name_in_owner = true
 
 [node name="UI" type="CanvasLayer" parent="." unique_id=1766082699]
 

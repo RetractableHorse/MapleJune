@@ -3,8 +3,11 @@ extends Node2D
 @export var player: Player
 @export var player_spawn: Marker2D
 
+@onready var tiles: TileMapLayer = %Tiles
+
 
 func _ready() -> void:
+	player.level = tiles
 	player.state_changed.connect(_on_player_state_changed)
 	_respawn_player()
 
