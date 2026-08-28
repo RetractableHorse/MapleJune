@@ -252,6 +252,7 @@ dash_gravity = 1000.0
 wall_slide_gravity = 5000.0
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1373083158]
+limit_bottom = 1340
 position_smoothing_enabled = true
 script = ExtResource("2_e4p34")
 target_path = NodePath("..")

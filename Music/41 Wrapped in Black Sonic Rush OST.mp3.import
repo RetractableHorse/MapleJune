@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bsvjek64yj2vo"
+path="res://.godot/imported/41 Wrapped in Black Sonic Rush OST.mp3-1f644af50f783172d70bcbf722de7f7f.mp3str"
+
+[deps]
+
+source_file="res://Music/41 Wrapped in Black Sonic Rush OST.mp3"
+dest_files=["res://.godot/imported/41 Wrapped in Black Sonic Rush OST.mp3-1f644af50f783172d70bcbf722de7f7f.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

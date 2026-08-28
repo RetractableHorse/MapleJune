@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://c2n0wctloslvs"
+path="res://.godot/imported/38 Bomber Barbara (Part 2) Sonic Rush OST.mp3-2d06885a8a21e8f08df2abeb052b664d.mp3str"
+
+[deps]
+
+source_file="res://Music/38 Bomber Barbara (Part 2) Sonic Rush OST.mp3"
+dest_files=["res://.godot/imported/38 Bomber Barbara (Part 2) Sonic Rush OST.mp3-2d06885a8a21e8f08df2abeb052b664d.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
